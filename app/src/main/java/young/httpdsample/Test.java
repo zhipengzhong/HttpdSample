@@ -2,6 +2,7 @@ package young.httpdsample;
 
 import android.os.AsyncTask;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import young.httpd.annotation.PathVariable;
@@ -17,9 +18,15 @@ public class Test {
         return null;
     }
 
-    @RequestMapping("table")
-    public Map deviceTable() {
-        return null;
+    @RequestMapping("table/{id}/")
+    public Map deviceTable(@PathVariable("id")String id, @PathVariable("id1")String id1, MainActivity activity) {
+        System.out.println(id);
+        System.out.println(id1);
+        System.out.println(activity);
+        HashMap<Object, Object> map = new HashMap<>();
+        map.put("11", "22");
+        map.put("33", "44");
+        return map;
     }
 
     @RequestMapping("info")

@@ -14,8 +14,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        HttpServer httpServer = new HttpServer();
+        httpServer.addInject(this);
         try {
-            new HttpServer().start();
+            httpServer.start();
         } catch (IOException e) {
         }
     }

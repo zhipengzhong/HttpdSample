@@ -69,7 +69,7 @@ public class HttpdProcessor extends AbstractProcessor {
                 .addParameter(ParameterizedTypeName.get(Map.class, String.class, String.class), "files")
                 .addParameter(ParameterizedTypeName.get(Map.class, String.class, String.class), "paths")
                 .addParameter(ParameterizedTypeName.get(Map.class, String.class, String.class), "headers")
-                .addException(Exception.class)
+//                .addException(Exception.class)
                 .beginControlFlow("switch (hash(url))")
                 .returns(Object.class);
         mConstructor = MethodSpec.constructorBuilder()
