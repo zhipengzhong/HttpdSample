@@ -22,9 +22,8 @@ public class HttpServer extends NanoHTTPD {
         }
     }
 
-    private void loadGeneratedHandler() throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        Class<?> clazz = Class.forName("young.httpd.GeneratedHttpdHandlerImpl");
-        mHttpdHandler = (HttpdHandler) clazz.newInstance();
+    private void loadGeneratedHandler() {
+        mHttpdHandler = new GeneratedHttpdHandlerImpl();
         super.addHTTPInterceptor(mHttpdHandler);
     }
 

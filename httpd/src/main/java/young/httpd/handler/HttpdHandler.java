@@ -96,17 +96,21 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
      */
     private Response disposeSucceed(Object result) {
         Response response;
-        Class resultType = result.getClass();
-        if (Response.class.isAssignableFrom(resultType)) {
-            response = (Response) result;
-        } else if (String.class.isAssignableFrom(resultType)) {
-            response = Response.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, (String) result);
-        } else if (List.class.isAssignableFrom(resultType)) {
-            response = Response.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, GSON.toJson(result));
-        } else if (Map.class.isAssignableFrom(resultType)) {
-            response = Response.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, GSON.toJson(result));
-        } else {
+        if (result == null) {
             response = Response.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, "");
+        }else {
+            Class resultType = result.getClass();
+            if (Response.class.isAssignableFrom(resultType)) {
+                response = (Response) result;
+            } else if (String.class.isAssignableFrom(resultType)) {
+                response = Response.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, (String) result);
+            } else if (List.class.isAssignableFrom(resultType)) {
+                response = Response.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, GSON.toJson(result));
+            } else if (Map.class.isAssignableFrom(resultType)) {
+                response = Response.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, GSON.toJson(result));
+            } else {
+                response = Response.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, "");
+            }
         }
         response.addHeader("Server", "YServer 1.0");
         return response;

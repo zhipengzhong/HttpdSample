@@ -1,2 +1,2 @@
-include ':app', ':httpd', ':httpd-compiler'
+include ':app', ':httpd', ':httpd-compiler', ':httpd-stub'
 rootProject.name='HttpdSample'
