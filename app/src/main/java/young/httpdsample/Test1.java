@@ -7,17 +7,17 @@ import young.httpd.annotation.RequestParam;
 @RequestMapping()
 public class Test1 {
 
-    @RequestMapping("test")
+//    @RequestMapping("test")
     public String test() {
         return null;
     }
 
-    @RequestMapping("table")
+//    @RequestMapping("table")
     public Map deviceTable() {
         return null;
     }
 
-    @RequestMapping("info")
+//    @RequestMapping("info")
     public void info(@RequestParam("deviceID") String deviceID) {
     }
 

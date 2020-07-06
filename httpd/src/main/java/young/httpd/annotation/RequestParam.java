@@ -8,5 +8,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.CLASS)
 public @interface RequestParam {
-    String value();
+    String value() default "";
 }

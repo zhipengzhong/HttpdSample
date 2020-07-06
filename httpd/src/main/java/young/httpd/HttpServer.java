@@ -18,7 +18,8 @@ public class HttpServer extends NanoHTTPD {
         super(port);
         try {
             loadGeneratedHandler();
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
     }
 

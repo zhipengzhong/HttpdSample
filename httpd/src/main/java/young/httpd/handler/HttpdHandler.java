@@ -98,7 +98,7 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
         Response response;
         if (result == null) {
             response = Response.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, "");
-        }else {
+        } else {
             Class resultType = result.getClass();
             if (Response.class.isAssignableFrom(resultType)) {
                 response = (Response) result;
@@ -109,7 +109,7 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
             } else if (Map.class.isAssignableFrom(resultType)) {
                 response = Response.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, GSON.toJson(result));
             } else {
-                response = Response.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, "");
+                response = Response.newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, GSON.toJson(result));
             }
         }
         response.addHeader("Server", "YServer 1.0");
@@ -210,12 +210,12 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
     }
 
     protected static <T> T getRequestParam(String key, Map<String, String> params, Map<String, String> files, Class<T> clazz) {
-        if (key == null || key.length() <= 0) return null;
+        if (key == null) return null;
         if (files != null && MultipartFile.class.isAssignableFrom(clazz)) {
             if (files.containsKey(key)) {
                 return (T) new MultipartFile(new File(files.get(key)), null, null);
             }
-        } else if (params != null && params.containsKey(key)) {
+        } else if (params != null && key.length() > 0 && params.containsKey(key)) {
             String s = params.get(key);
             if (String.class.isAssignableFrom(clazz)) {
                 return (T) s;
@@ -226,6 +226,10 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
                 }
             }
             // TODO: 2020/3/16 待添加解析类型
+        } else if (params != null && "".equals(key)) {
+            if (Map.class.isAssignableFrom(clazz)) {
+                return (T) params;
+            }
         }
         return null;
     }
@@ -233,7 +237,7 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
     protected static <T> T getInject(List<Object> inject, Class<T> clazz) {
         if (inject == null) return null;
         for (Object o : inject) {
-            if (o.getClass().isAssignableFrom(clazz)) {
+            if (clazz.isAssignableFrom(o.getClass())) {
                 return (T) o;
             }
         }
