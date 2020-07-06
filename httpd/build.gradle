@@ -1,4 +1,5 @@
 apply plugin: 'java-library'
+apply plugin: 'com.novoda.bintray-release'
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -8,3 +9,13 @@ dependencies {
 
 sourceCompatibility = "7"
 targetCompatibility = "7"
+
+publish {
+    repoName = 'young'
+    userOrg = 'zhipengzhong'
+    groupId = 'young.httpd'
+    artifactId = 'httpd'
+    publishVersion = '1.0.0'
+    desc = ''
+    website = 'https://github.com/zhipengzhong/HttpdSample'
+}

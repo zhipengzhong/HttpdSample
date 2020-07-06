@@ -1,6 +1,7 @@
 apply plugin: 'java-library'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'java'
+apply plugin: 'com.novoda.bintray-release'
 
 buildscript {
     repositories {
@@ -22,3 +23,13 @@ dependencies {
 
 sourceCompatibility = "7"
 targetCompatibility = "7"
+
+publish {
+    repoName = 'young'
+    userOrg = 'zhipengzhong'
+    groupId = 'young.httpd'
+    artifactId = 'httpd-compiler'
+    publishVersion = '1.0.0'
+    desc = ''
+    website = 'https://github.com/zhipengzhong/HttpdSample'
+}
