@@ -64,12 +64,10 @@ public class HttpdProcessor extends AbstractProcessor {
         mDisposeRequest = MethodSpec.methodBuilder(METHOD_DISPOSE_REQUEST)
                 .addModifiers(Modifier.PROTECTED)
                 .addParameter(String.class, "url")
-//                .addParameter(ParameterizedTypeName.get(List.class, Object.class), "inject")
                 .addParameter(ParameterizedTypeName.get(Map.class, String.class, String.class), "params")
                 .addParameter(ParameterizedTypeName.get(Map.class, String.class, String.class), "files")
                 .addParameter(ParameterizedTypeName.get(Map.class, String.class, String.class), "paths")
                 .addParameter(ParameterizedTypeName.get(Map.class, String.class, String.class), "headers")
-//                .addException(Exception.class)
                 .beginControlFlow("switch (hash(url))")
                 .returns(Object.class);
         mConstructor = MethodSpec.constructorBuilder()
@@ -216,8 +214,9 @@ public class HttpdProcessor extends AbstractProcessor {
             fatalError(" mapping: " + url + " repetitive!");
         }
         HASHS.add(hashCode);
+        String name = urlVarName.toUpperCase();
         mTypeSpec.addField(
-                FieldSpec.builder(int.class, urlVarName.toUpperCase(), Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
+                FieldSpec.builder(int.class, name, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
                         .initializer("$L", hashCode).build()
         );
         mConstructor.addStatement("registerUrl($S)", url);
@@ -227,7 +226,7 @@ public class HttpdProcessor extends AbstractProcessor {
         String methodName = executableElement.getSimpleName().toString();
         list.add(0, methodName);
         list.add(0, classVar);
-        list.add(0, urlVarName.toUpperCase());
+        list.add(0, name);
 
         mDisposeRequest.addStatement(sb.toString(), list.toArray(new Object[]{}));
     }
