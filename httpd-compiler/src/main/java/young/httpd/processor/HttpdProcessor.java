@@ -51,6 +51,7 @@ public class HttpdProcessor extends AbstractProcessor {
     private MethodSpec.Builder mDisposeRequest;
     private MethodSpec.Builder mConstructor;
     private TypeSpec.Builder mTypeSpec;
+    private int mUrlMappingCount;
 
 
     private static final int hash(Object key) {
@@ -159,7 +160,7 @@ public class HttpdProcessor extends AbstractProcessor {
         } else {
             sb.append("case $N: $N.$L(");
         }
-        String urlVarName = generateVariable(typeElement.getQualifiedName().toString() + "_" + executableElement.getSimpleName().toString()).toUpperCase();
+
         for (int i = 0; i < parameters.size(); i++) {
             if (i != 0) sb.append(",");
             VariableElement variableElement = parameters.get(i);
@@ -171,8 +172,6 @@ public class HttpdProcessor extends AbstractProcessor {
             } catch (Exception e) {
                 typeName = ClassName.get(variableElement.asType());
             }
-
-            urlVarName += ("_" + (className != null ? className.simpleName() : typeName.toString()));
 
             RequestParam requestParam = variableElement.getAnnotation(RequestParam.class);
             if (requestParam != null) {
@@ -214,7 +213,7 @@ public class HttpdProcessor extends AbstractProcessor {
             fatalError(" mapping: " + url + " repetitive!");
         }
         HASHS.add(hashCode);
-        String name = urlVarName.toUpperCase();
+        String name = getUrlVarName(url);
         mTypeSpec.addField(
                 FieldSpec.builder(int.class, name, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
                         .initializer("$L", hashCode).build()
@@ -229,6 +228,10 @@ public class HttpdProcessor extends AbstractProcessor {
         list.add(0, name);
 
         mDisposeRequest.addStatement(sb.toString(), list.toArray(new Object[]{}));
+    }
+
+    private String getUrlVarName(String url) {
+        return "URL_MAPPING_" + (mUrlMappingCount++);
     }
 
 
