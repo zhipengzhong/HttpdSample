@@ -151,32 +151,17 @@ public class HttpdProcessor extends AbstractProcessor {
         RequestMapping typeMapping = typeElement.getAnnotation(RequestMapping.class);
         StringBuilder builder = new StringBuilder();
         builder.append("/").append(typeMapping.value()).append("/").append(executableMapping.value());
-        String url = builder.toString().replaceAll("/+", "/").replaceAll("^/|/$", "");
-        String urlVarName = generateVariable(typeElement.getQualifiedName().toString() + "_" + executableElement.getSimpleName().toString()).toUpperCase();
-        int hashCode = hash(url);
-        if (HASHS.contains(hashCode)) {
-            fatalError(" mapping: " + url + " repetitive!");
-        }
-        HASHS.add(hashCode);
-        mTypeSpec.addField(
-                FieldSpec.builder(int.class, urlVarName, Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
-                        .initializer("$L", hashCode).build()
-        );
-        mConstructor.addStatement("registerUrl($S)", url);
+
         List<? extends VariableElement> parameters = executableElement.getParameters();
         StringBuilder sb = new StringBuilder();
         List<Object> list = new ArrayList<>();
-        String classVar = generateVariable(typeElement.getQualifiedName().toString());
-        String methodName = executableElement.getSimpleName().toString();
-        list.add(urlVarName);
-        list.add(classVar);
-        list.add(methodName);
         String r = executableElement.getReturnType().toString().toLowerCase();
         if (!VOID.equals(r)) {
             sb.append("case $N: return $N.$L(");
         } else {
             sb.append("case $N: $N.$L(");
         }
+        String urlVarName = generateVariable(typeElement.getQualifiedName().toString() + "_" + executableElement.getSimpleName().toString()).toUpperCase();
         for (int i = 0; i < parameters.size(); i++) {
             if (i != 0) sb.append(",");
             VariableElement variableElement = parameters.get(i);
@@ -189,6 +174,7 @@ public class HttpdProcessor extends AbstractProcessor {
                 typeName = ClassName.get(variableElement.asType());
             }
 
+            urlVarName += ("_" + (className != null ? className.simpleName() : typeName.toString()));
 
             RequestParam requestParam = variableElement.getAnnotation(RequestParam.class);
             if (requestParam != null) {
@@ -222,6 +208,27 @@ public class HttpdProcessor extends AbstractProcessor {
         } else {
             sb.append(")");
         }
+
+
+        String url = builder.toString().replaceAll("/+", "/").replaceAll("^/|/$", "");
+        int hashCode = hash(url);
+        if (HASHS.contains(hashCode)) {
+            fatalError(" mapping: " + url + " repetitive!");
+        }
+        HASHS.add(hashCode);
+        mTypeSpec.addField(
+                FieldSpec.builder(int.class, urlVarName.toUpperCase(), Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL)
+                        .initializer("$L", hashCode).build()
+        );
+        mConstructor.addStatement("registerUrl($S)", url);
+
+
+        String classVar = generateVariable(typeElement.getQualifiedName().toString());
+        String methodName = executableElement.getSimpleName().toString();
+        list.add(0, methodName);
+        list.add(0, classVar);
+        list.add(0, urlVarName.toUpperCase());
+
         mDisposeRequest.addStatement(sb.toString(), list.toArray(new Object[]{}));
     }
 

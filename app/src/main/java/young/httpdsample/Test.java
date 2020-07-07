@@ -17,8 +17,13 @@ public class Test {
         return null;
     }
 
+    @RequestMapping("test/test")
+    public String test(String test) {
+        return test;
+    }
+
     @RequestMapping("table/{id}/")
-    public Map deviceTable(@PathVariable("id") String id, @PathVariable("id1") String id1, MainActivity activity) {
+    public Map deviceTable(@PathVariable("id") String id, @PathVariable("id1") String id1, MainActivity activity, long i) {
         System.out.println(id);
         System.out.println(id1);
         System.out.println(activity);
