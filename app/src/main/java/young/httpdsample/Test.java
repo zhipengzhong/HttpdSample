@@ -8,9 +8,8 @@ import java.util.Map;
 import young.httpd.annotation.PathVariable;
 import young.httpd.annotation.RequestHeader;
 import young.httpd.annotation.RequestMapping;
-import young.httpd.annotation.RequestParam;
 
-@RequestMapping("admin/v1/api/test/")
+@RequestMapping("test")
 public class Test {
 
     @RequestMapping("test")
@@ -19,7 +18,7 @@ public class Test {
     }
 
     @RequestMapping("table/{id}/")
-    public Map deviceTable(@PathVariable("id")String id, @PathVariable("id1")String id1, MainActivity activity) {
+    public Map deviceTable(@PathVariable("id") String id, @PathVariable("id1") String id1, MainActivity activity) {
         System.out.println(id);
         System.out.println(id1);
         System.out.println(activity);
@@ -29,8 +28,13 @@ public class Test {
         return map;
     }
 
-    @RequestMapping("info")
-    public void info(@RequestParam("deviceID") String deviceID) {
+    @RequestMapping("inject")
+    public String testInject(Long time) {
+        if (time != null) {
+            long l = (System.currentTimeMillis() - time) / 1000;
+            return "对象回收测试   time:" + l;
+        }
+        return "对象已回收";
     }
 
 

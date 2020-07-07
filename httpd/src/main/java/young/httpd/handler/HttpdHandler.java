@@ -11,9 +11,9 @@ import org.nanohttpd.util.IHandler;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,7 +29,7 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
     private static final Gson GSON = new Gson();
     private List<String> mFixedUrlList = new ArrayList<>();
     private List<String> mVariableUrlList = new ArrayList<>();
-    private List<Object> mInjectList = new CopyOnWriteArrayList<>();
+    private WeakReferenceQueue<Object> mInjectQueue = new WeakReferenceQueue<>();
 
     protected void registerUrl(String url) {
         List<String> list = matcher(url, "(?<=/|^)([^/]+)(?=/|$)");
@@ -42,7 +42,7 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
         mFixedUrlList.add(url);
     }
 
-    protected abstract Object disposeRequest(String url, List<Object> inject, Map<String, String> params, Map<String, String> files, Map<String, String> paths, Map<String, String> headers);
+    protected abstract Object disposeRequest(String url, Map<String, String> params, Map<String, String> files, Map<String, String> paths, Map<String, String> headers);
 
     @Override
     public Response handle(IHTTPSession input) {
@@ -63,8 +63,8 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
         Map<String, String> params = input.getParms();
 
         try {
-            return disposeSucceed(disposeRequest(mapping, mInjectList, params, file, pathVariable, headers));
-        } catch (Exception e) {
+            return disposeSucceed(disposeRequest(mapping, params, file, pathVariable, headers));
+        } catch (Throwable e) {
             return disposeFail(e);
         }
     }
@@ -74,17 +74,8 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
      *
      * @param o
      */
-    public void addInject(Object o) {
-        mInjectList.add(o);
-    }
-
-    /**
-     * 移除注入的参数
-     *
-     * @param o
-     */
-    public void removeInject(Object o) {
-        mInjectList.remove(o);
+    public void inject(Object o) {
+        mInjectQueue.add(o);
     }
 
 
@@ -123,7 +114,7 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
      * @param throwable
      * @return
      */
-    private Response disposeFail(Exception throwable) {
+    private Response disposeFail(Throwable throwable) {
         Response response;
         if (throwable instanceof UnauthorizedException) {
             response = Response.newFixedLengthResponse(Status.UNAUTHORIZED, NanoHTTPD.MIME_PLAINTEXT, "");
@@ -132,6 +123,7 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
         } else if (throwable instanceof NotFoundException) {
             response = Response.newFixedLengthResponse(Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT, "");
         } else {
+            throwable.printStackTrace();
             response = Response.newFixedLengthResponse(Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "");
         }
         response.addHeader("Server", "YServer 1.0");
@@ -209,7 +201,7 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
         return null;
     }
 
-    protected static <T> T getRequestParam(String key, Map<String, String> params, Map<String, String> files, Class<T> clazz) {
+    protected <T> T getRequestParam(String key, Map<String, String> params, Map<String, String> files, Class<T> clazz) {
         if (key == null) return null;
         if (files != null && MultipartFile.class.isAssignableFrom(clazz)) {
             if (files.containsKey(key)) {
@@ -234,12 +226,12 @@ public abstract class HttpdHandler implements IHandler<IHTTPSession, Response> {
         return null;
     }
 
-    protected static <T> T getInject(List<Object> inject, Class<T> clazz) {
-        if (inject == null) return null;
-        for (Object o : inject) {
-            if (clazz.isAssignableFrom(o.getClass())) {
-                return (T) o;
-            }
+    protected <T> T getInject(Class<T> clazz) {
+        if (mInjectQueue == null) return null;
+        Iterator<?> iterator = mInjectQueue.iterator();
+        while (iterator.hasNext()) {
+            Object o = iterator.next();
+            if (clazz.isAssignableFrom(o.getClass())) return (T) o;
         }
         return null;
     }

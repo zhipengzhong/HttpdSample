@@ -33,16 +33,7 @@ public class HttpServer extends NanoHTTPD {
      *
      * @param o
      */
-    public void addInject(Object o) {
-        mHttpdHandler.addInject(o);
-    }
-
-    /**
-     * 移除注入的参数
-     *
-     * @param o
-     */
-    public void removeInject(Object o) {
-        mHttpdHandler.removeInject(o);
+    public void inject(Object o) {
+        mHttpdHandler.inject(o);
     }
 }

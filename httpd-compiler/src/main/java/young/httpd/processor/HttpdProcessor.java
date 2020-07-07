@@ -64,7 +64,7 @@ public class HttpdProcessor extends AbstractProcessor {
         mDisposeRequest = MethodSpec.methodBuilder(METHOD_DISPOSE_REQUEST)
                 .addModifiers(Modifier.PROTECTED)
                 .addParameter(String.class, "url")
-                .addParameter(ParameterizedTypeName.get(List.class, Object.class), "inject")
+//                .addParameter(ParameterizedTypeName.get(List.class, Object.class), "inject")
                 .addParameter(ParameterizedTypeName.get(Map.class, String.class, String.class), "params")
                 .addParameter(ParameterizedTypeName.get(Map.class, String.class, String.class), "files")
                 .addParameter(ParameterizedTypeName.get(Map.class, String.class, String.class), "paths")
@@ -180,13 +180,21 @@ public class HttpdProcessor extends AbstractProcessor {
         for (int i = 0; i < parameters.size(); i++) {
             if (i != 0) sb.append(",");
             VariableElement variableElement = parameters.get(i);
-            ClassName className = ClassName.bestGuess(variableElement.asType().toString().replaceAll("<.+>", ""));
+
+            ClassName className = null;
+            TypeName typeName = null;
+            try {
+                className = ClassName.bestGuess(variableElement.asType().toString().replaceAll("<.+>", ""));
+            } catch (Exception e) {
+                typeName = ClassName.get(variableElement.asType());
+            }
+
 
             RequestParam requestParam = variableElement.getAnnotation(RequestParam.class);
             if (requestParam != null) {
                 sb.append("getRequestParam($S, params, files, $T.class)");
                 list.add(requestParam.value());
-                list.add(className);
+                list.add(className == null ? typeName : className);
                 continue;
             }
 
@@ -194,7 +202,7 @@ public class HttpdProcessor extends AbstractProcessor {
             if (pathVariable != null) {
                 sb.append("getPathVariable($S, paths, $T.class)");
                 list.add(pathVariable.value());
-                list.add(className);
+                list.add(className == null ? typeName : className);
                 continue;
             }
 
@@ -202,12 +210,12 @@ public class HttpdProcessor extends AbstractProcessor {
             if (requestHeader != null) {
                 sb.append("getRequestHeader($S, headers, $T.class)");
                 list.add(requestHeader.value());
-                list.add(className);
+                list.add(className == null ? typeName : className);
                 continue;
             }
 
-            sb.append("getInject(inject, $T.class)");
-            list.add(className);
+            sb.append("getInject($T.class)");
+            list.add(className == null ? typeName : className);
         }
         if (VOID.equals(r)) {
             sb.append("); return null");
